@@ -241,10 +241,11 @@ module Flapjack
       end
 
       def pagerduty_acknowledged?(opts)
-        subdomain   = opts['subdomain']
-        username    = opts['username']
-        password    = opts['password']
-        check       = opts['check']
+        subdomain      = opts['subdomain']
+        api_access_key = opts['api_access_key']
+        username       = opts['username']
+        password       = opts['password']
+        check          = opts['check']
 
         unless subdomain && username && password && check
           @logger.warn("pagerduty_acknowledged?: Unable to look for acknowledgements on pagerduty" +
@@ -262,8 +263,12 @@ module Flapjack
                   'incident_key' => check,
                   'status'       => 'acknowledged' }
 
-        options = { :head  => { 'authorization' => [username, password] },
-                    :query => query }
+        options = { :query => query }
+        if api_key
+          options[:head] = { 'authorization' => "Token token=#{api_key}"
+        else
+          options[:head] = { 'authorization' => [username, password] }
+        end
 
         @logger.debug("pagerduty_acknowledged?: request to #{url}")
         @logger.debug("pagerduty_acknowledged?: query: #{query.inspect}")
